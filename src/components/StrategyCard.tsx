@@ -39,8 +39,10 @@ export const StrategyCard = (props: StrategyCardProps) => {
       setStatus("following");
     } else if (status === "following") {
       setStatus("paused");
-    } else if (status === "paused") {
-      setStatus("unfollow");
+    }
+    
+    else if (status === "paused") {
+      setStatus("following");
     }
     // TODO: 在这里调用后端接口
   };

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,13 +7,13 @@ import { StrategyCard } from "@/components/StrategyCard";
 import { StatsCard } from "@/components/StatsCard";
 import { TraderAvatar } from "@/components/TraderAvatar";
 import authService from "@/services/authService";
-import { 
-  TrendingUp, 
-  DollarSign, 
-  Users, 
+import {
+  TrendingUp,
+  DollarSign,
+  Users,
   Activity,
   Plus,
-  Filter
+  Filter,
 } from "lucide-react";
 
 interface User {
@@ -36,18 +35,18 @@ const Index = () => {
       runningDays: 89,
       monthlyReturn: 15.67,
       maxDrawdown: -12.3,
-      status: "following" as const
+      status: "unfollow" as const,
     },
     {
       traderName: "AI量化策略",
-      traderAvatar: "/placeholder.svg", 
+      traderAvatar: "/placeholder.svg",
       platform: "OKX",
       investedAmount: 3000,
       totalAUM: 1200000,
       runningDays: 156,
       monthlyReturn: -2.45,
       maxDrawdown: -8.7,
-      status: "paused" as const
+      status: "paused" as const,
     },
     {
       traderName: "稳健收益王",
@@ -58,7 +57,7 @@ const Index = () => {
       runningDays: 234,
       monthlyReturn: 8.92,
       maxDrawdown: -5.2,
-      status: "following" as const
+      status: "following" as const,
     },
     {
       traderName: "短线高手",
@@ -69,18 +68,31 @@ const Index = () => {
       runningDays: 67,
       monthlyReturn: 22.31,
       maxDrawdown: -18.9,
-      status: "following" as const
-    }
+      status: "following" as const,
+    },
   ];
 
-  const totalInvested = mockStrategies.reduce((sum, strategy) => sum + strategy.investedAmount, 0);
-  const activeStrategies = mockStrategies.filter(s => s.status === "following").length;
-  const avgReturn = mockStrategies.reduce((sum, strategy) => sum + strategy.monthlyReturn, 0) / mockStrategies.length;
+  const totalInvested = mockStrategies.reduce(
+    (sum, strategy) => sum + strategy.investedAmount,
+    0
+  );
+  const followingStrategies = mockStrategies.filter(
+    (s) => s.status === "following"
+  ).length;
+  const unfollowStrategies = mockStrategies.filter(
+    (s) => s.status === "unfollow"
+  ).length;
+  const avgReturn =
+    mockStrategies.reduce((sum, strategy) => sum + strategy.monthlyReturn, 0) /
+    mockStrategies.length;
 
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    authService.getCurrentUser().then(setUser).catch(() => setUser(null));
+    authService
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null));
   }, []);
 
   return (
@@ -91,9 +103,11 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">跟单交易</h1>
-              <p className="text-muted-foreground mt-1">管理您的跟单策略投资组合</p>
+              <p className="text-muted-foreground mt-1">
+                管理您的跟单策略投资组合
+              </p>
             </div>
-            <div className="flex space-x-3 items-center">
+            {/* <div className="flex space-x-3 items-center">
               <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 筛选
@@ -109,7 +123,7 @@ const Index = () => {
                   size="md"
                 />
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -124,7 +138,7 @@ const Index = () => {
           />
           <StatsCard
             title="活跃策略"
-            value={activeStrategies.toString()}
+            value={followingStrategies.toString()}
             suffix="个"
           />
           <StatsCard
@@ -145,9 +159,22 @@ const Index = () => {
         <Tabs defaultValue="all" className="space-y-6">
           <div className="flex items-center justify-between">
             <TabsList className="bg-muted">
-              <TabsTrigger value="all">全部策略 ({mockStrategies.length})</TabsTrigger>
-              <TabsTrigger value="following">跟单中 ({activeStrategies})</TabsTrigger>
-              <TabsTrigger value="paused">已暂停 ({mockStrategies.length - activeStrategies})</TabsTrigger>
+              <TabsTrigger value="all">
+                全部策略 ({mockStrategies.length})
+              </TabsTrigger>
+              <TabsTrigger value="unfollow">
+                未跟单 ({unfollowStrategies})
+              </TabsTrigger>
+              <TabsTrigger value="following">
+                跟单中 ({followingStrategies})
+              </TabsTrigger>
+              <TabsTrigger value="paused">
+                已暂停 (
+                {mockStrategies.length -
+                  unfollowStrategies -
+                  followingStrategies}
+                )
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -158,11 +185,21 @@ const Index = () => {
               ))}
             </div>
           </TabsContent>
+          
+          <TabsContent value="unfollow" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {mockStrategies
+                .filter((s) => s.status === "unfollow")
+                .map((strategy, index) => (
+                  <StrategyCard key={index} {...strategy} />
+                ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="following" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {mockStrategies
-                .filter(s => s.status === "following")
+                .filter((s) => s.status === "following")
                 .map((strategy, index) => (
                   <StrategyCard key={index} {...strategy} />
                 ))}
@@ -172,7 +209,7 @@ const Index = () => {
           <TabsContent value="paused" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {mockStrategies
-                .filter(s => s.status === "paused")
+                .filter((s) => s.status === "paused")
                 .map((strategy, index) => (
                   <StrategyCard key={index} {...strategy} />
                 ))}
@@ -189,7 +226,9 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            <p>跟单交易存在风险，过往表现不代表未来收益。请根据自身风险承受能力谨慎投资，合理配置资金。</p>
+            <p>
+              跟单交易存在风险，过往表现不代表未来收益。请根据自身风险承受能力谨慎投资，合理配置资金。
+            </p>
           </CardContent>
         </Card>
       </div>
