@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { StrategyCard } from "@/components/StrategyCard";
 import { StatsCard } from "@/components/StatsCard";
 import { TraderAvatar } from "@/components/TraderAvatar";
-import authService from "@/services/authService";
+import LoginModal from "@/components/auth/LoginModal";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/hooks/useAuth";
 import {
   TrendingUp,
   DollarSign,
@@ -14,14 +16,9 @@ import {
   Activity,
   Plus,
   Filter,
+  LogIn,
+  LogOut,
 } from "lucide-react";
-
-interface User {
-  avatar?: string;
-  nickname?: string;
-  name?: string;
-  [key: string]: unknown;
-}
 
 const Index = () => {
   // 模拟数据
@@ -86,13 +83,15 @@ const Index = () => {
     mockStrategies.reduce((sum, strategy) => sum + strategy.monthlyReturn, 0) /
     mockStrategies.length;
 
-  const [user, setUser] = useState<User | null>(null);
+  const { wholeUser } = useAuthStore();
+  const { fetchUser, logout } = useAuth();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
-    authService
-      .getCurrentUser()
-      .then(setUser)
-      .catch(() => setUser(null));
+    // 初始化时获取用户信息
+    if (!wholeUser) {
+      fetchUser();
+    }
   }, []);
 
   return (
@@ -107,7 +106,7 @@ const Index = () => {
                 管理您的跟单策略投资组合
               </p>
             </div>
-            {/* <div className="flex space-x-3 items-center">
+            <div className="flex space-x-3 items-center">
               <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 筛选
@@ -116,14 +115,32 @@ const Index = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 添加策略
               </Button>
-              {user && (
-                <TraderAvatar
-                  src={user.avatar || "/avatar.png"}
-                  name={user.nickname || user.name || "用户"}
-                  size="md"
-                />
+              {wholeUser ? (
+                <div className="flex items-center space-x-3">
+                  <TraderAvatar
+                    src={wholeUser.user?.avatar || "/avatar.png"}
+                    name={wholeUser.user?.name || "用户"}
+                    size="md"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    登出
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => setIsLoginModalOpen(true)}
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  登录
+                </Button>
               )}
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
@@ -232,6 +249,12 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* 登录模态框 */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 };
