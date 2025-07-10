@@ -84,15 +84,10 @@ const Index = () => {
     mockStrategies.length;
 
   const { wholeUser } = useAuthStore();
-  const { fetchUser, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth(); // 使用isAuthenticated而不是fetchUser
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  useEffect(() => {
-    // 初始化时获取用户信息
-    if (!wholeUser) {
-      fetchUser();
-    }
-  }, []);
+  // 移除可能导致循环请求的useEffect，认证状态检查由useAuth内部处理
 
   return (
     <div className="min-h-screen bg-background">
